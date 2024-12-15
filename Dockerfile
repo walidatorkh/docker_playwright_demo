@@ -1,24 +1,44 @@
-FROM mcr.microsoft.com/playwright:v1.48.1-focal
+FROM node:18-slim
 
-# Update and upgrade the system packages
-RUN apt-get update && apt-get upgrade -y
+# Install dependencies for Playwright
+RUN apt-get update && apt-get install -y \
+    libglib2.0-0 \
+    libnss3 \
+    libnspr4 \
+    libatk1.0-0 \
+    libatk-bridge2.0-0 \
+    libcups2 \
+    libdrm2 \
+    libdbus-1-3 \
+    libxcb1 \
+    libxkbcommon0 \
+    libx11-6 \
+    libxcomposite1 \
+    libxdamage1 \
+    libxext6 \
+    libxfixes3 \
+    libxrandr2 \
+    libgbm1 \
+    libpango-1.0-0 \
+    libcairo2 \
+    libasound2 \
+    && rm -rf /var/lib/apt/lists/*
 
-# Set the working directory
 WORKDIR /app
 
-# Copy package.json and package-lock.json (if available)
+# Copy package files
 COPY package*.json ./
 
-# Install project dependencies
+# Install dependencies
 RUN npm ci
 
-# Copy the rest of your project files
+# Copy the rest of the code
 COPY . .
 
 # Install Playwright browsers
-RUN npx playwright install
+RUN npx playwright install chromium
 
-# Set the default command to run tests
+# Command to run tests
 CMD ["npx", "playwright", "test"]
 
 # Docker comands needed for:
