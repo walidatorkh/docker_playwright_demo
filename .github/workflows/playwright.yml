@@ -9,23 +9,33 @@ jobs:
   test:
     name: 'Playwright Tests'
     runs-on: ubuntu-latest
-    container:
-      image: mcr.microsoft.com/playwright:v1.49.0-focal
+    permissions:
+      contents: read
+      packages: read
     
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image
+        uses: docker/build-push-action@v5
         with:
-          node-version: '18'
-          cache: 'npm'
+          context: .
+          load: true
+          tags: playwright-tests:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Run Playwright tests
-        run: npx playwright test
+      - name: Run tests in Docker
+        run: |
+          docker run --rm \
+            --ipc=host \
+            -v ${{ github.workspace }}/playwright-report:/app/playwright-report \
+            -v ${{ github.workspace }}/test-results:/app/test-results \
+            playwright-tests:latest
 
       - name: Upload test results
         if: always()
