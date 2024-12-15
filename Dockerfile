@@ -1,5 +1,6 @@
 #FROM node:18-slim
 FROM mcr.microsoft.com/playwright:v1.48.1-focal
+
 # Install dependencies for Playwright
 RUN apt-get update && apt-get upgrade -y
 
